@@ -23,11 +23,13 @@ def load(ctx, project, csv):
     if not any((csv, )):
         raise click.UsageError("Please specify --csv to load")
     url = "https://gopherairtime-%s.subsvc.com/api/v1/recharges/" % project
+    click.echo("Gopher Airtime CLI connected to: %s." % url)
     session = get_session(ctx.obj.token)
     if csv:
         for req in requests_from_csv(csv):
             click.echo("Loading airtime requests for %(msisdn)s." % req)
-            session.post(url, data=json.dumps(req))
+            resp = session.post(url, data=json.dumps(req)).json()
+            click.echo("Gopher Airtime reference: %s." % resp["id"])
 
 
 def requests_from_csv(csv_file):
@@ -45,7 +47,7 @@ def requests_from_csv(csv_file):
 def get_session(token):
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Token: %s' % token
+        'Authorization': 'Token %s' % token
     }
     session = requests.Session()
     session.headers.update(headers)
